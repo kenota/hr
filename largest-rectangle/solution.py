@@ -20,19 +20,31 @@ import sys
 # -3 -2 -1  0  1 (-4)
 # -4 -3 -2 -1  0 (-5)
 
+# The idea behind the algorithm:
+# We keep an increasing stack of heights and the index where
+# we encountered that height. When next hight is lower than
+# latest in the stack, we compare which squares the current index
+# complets and save max.
+# One we iterated over everything, we check non-completed squares too.
+def use_mem(h):
+    path = [(h[0], 0)]
+    mh = float('-inf')
 
-    
-def two_pointers(h):
-    l = 0
-    r = len(h) -1 
-    res = float('-inf')
-    while l < r:
-        res = max(res, min(h[l:r+1]) * (r - l + 1))
-        if h[l+1] > h[l]:
-            l += 1
-        else:
-            r -= 1
-    return res
+    for i in range(1, len(h)):
+        j = len(path) - 1
+        while j >= 0 and path[j][0] > h[i]:
+            height, start = path[j]
+            mh = max(mh, height * (i - start))
+            path[j] = (h[i], start)
+            j -= 1        
+        if h[i] > path[-1][0]:
+            path.append((h[i], i))
+        
+    while len(path) > 0:
+        height, start = path.pop()
+        mh = max(mh, height * (i - start + 1))
+
+    return mh
 
 def brute_force(h):
     res = float('-inf')
@@ -49,7 +61,7 @@ def brute_force(h):
     return res
 
 def largestRectangle(h):
-    return two_pointers(h)
+    return use_mem(h)
 
 if __name__ == '__main__':
     fptr = open(os.environ['OUTPUT_PATH'], 'w')
